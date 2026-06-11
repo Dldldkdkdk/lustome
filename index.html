@@ -1,0 +1,522 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>You've Been Selected — Don't Miss Out</title>
+    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: system-ui, sans-serif;
+            background: #000;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .image-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            z-index: -1;
+        }
+        .overlay-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.45);
+            z-index: 0;
+            transition: background 0.4s ease;
+        }
+        body.overlay-active .overlay-bg {
+            background: rgba(0, 0, 0, 0.7);
+        }
+
+        /* ── Initial Screen ── */
+        .initial-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 0 20px 40px;
+            transition: opacity 0.25s ease, transform 0.35s ease;
+        }
+        body.overlay-active .initial-screen {
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(20px);
+        }
+
+        /* Top status */
+        .top-status {
+            position: absolute;
+            top: 28px;
+            left: 0;
+            right: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            padding: 0 16px;
+        }
+        .badge-row {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+        .badge {
+            background: rgba(255,255,255,0.12);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: #fff;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.6px;
+            padding: 6px 14px;
+            border-radius: 40px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            animation: fadeSlideDown 0.6s ease both;
+        }
+        .badge:nth-child(2) { animation-delay: 0.08s; }
+        .badge:nth-child(3) { animation-delay: 0.16s; }
+        @keyframes fadeSlideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Live counter */
+        .live-counter {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            width: max-content;
+            max-width: calc(100% - 32px);
+            padding: 9px 14px;
+            background: rgba(0, 0, 0, 0.32);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            color: #fff;
+            font-size: 0.8rem;
+            font-weight: 500;
+            line-height: 1;
+            white-space: nowrap;
+            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
+            animation: fadeSlideDown 0.6s 0.2s ease both;
+        }
+        .live-dot {
+            width: 9px;
+            height: 9px;
+            background: #4CD964;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(76,217,100,0.7);
+            flex: 0 0 auto;
+            animation: pulseDot 1.8s infinite;
+        }
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.35; transform: scale(0.75); }
+        }
+        #liveCount {
+            font-weight: 700;
+            color: #4CD964;
+            min-width: 44px;
+            display: inline-block;
+            text-align: center;
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* Bottom content */
+        .bottom-content {
+            text-align: center;
+            animation: fadeSlideUp 0.5s 0.15s ease both;
+        }
+        @keyframes fadeSlideUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+        .headline {
+            color: #fff;
+            font-size: 2.1rem;
+            font-weight: 800;
+            line-height: 1.15;
+            text-shadow: 0 3px 18px rgba(0,0,0,0.7);
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+        .subheadline {
+            color: rgba(255,255,255,0.8);
+            font-size: 1rem;
+            font-weight: 400;
+            margin-bottom: 22px;
+            text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+        }
+        .initial-btn {
+            background: linear-gradient(135deg, #FF2D55, #FF3B6E);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.28);
+            padding: 16px 52px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 60px;
+            cursor: pointer;
+            letter-spacing: 0.4px;
+            box-shadow: 0 16px 42px rgba(255,45,85,0.58), 0 0 0 4px rgba(255,255,255,0.16);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .initial-btn::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
+            border-radius: 60px;
+        }
+        .initial-btn:active {
+            transform: scale(0.96);
+            box-shadow: 0 8px 20px rgba(255,45,85,0.5);
+        }
+        /* Urgency pulse on button */
+        .initial-btn {
+            animation: btnUrgent 2.2s infinite;
+        }
+        @keyframes btnUrgent {
+            0%, 100% { box-shadow: 0 16px 42px rgba(255,45,85,0.58), 0 0 0 4px rgba(255,255,255,0.16); }
+            50% { box-shadow: 0 18px 50px rgba(255,45,85,0.82), 0 0 0 9px rgba(255,45,85,0.18); }
+        }
+        .spots-left {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.78rem;
+            margin-top: 14px;
+            font-weight: 500;
+            animation: fadeSlideUp 0.5s 0.35s ease both;
+        }
+        .spots-left strong {
+            color: #FFD000;
+            font-weight: 700;
+        }
+
+        /* ── Join Overlay ── */
+        .join-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.88);
+            backdrop-filter: blur(14px);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            padding: 0 28px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.35s ease;
+        }
+        .join-overlay.visible {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .join-context {
+            color: rgba(255,255,255,0.92);
+            font-size: 1.2rem;
+            font-weight: 600;
+            text-align: center;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            animation: fadeSlideUp 0.35s 0.1s ease both;
+        }
+        .join-btn {
+            background: linear-gradient(135deg, #FF2D55, #5851DB);
+            color: #fff;
+            border: none;
+            align-self: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: min(100%, 260px);
+            margin: 0 auto;
+            padding: 18px 50px;
+            box-sizing: border-box;
+            font-size: 1.3rem;
+            font-weight: 700;
+            text-align: center;
+            border-radius: 60px;
+            cursor: pointer;
+            letter-spacing: 0.5px;
+            box-shadow: 0 14px 36px rgba(0,0,0,0.55), 0 0 0 3px rgba(255,45,85,0.45);
+            transition: all 0.2s ease;
+            animation: pulseGlow 1.5s infinite;
+        }
+        .join-btn:active {
+            transform: scale(0.96);
+        }
+        .join-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            animation: none;
+        }
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.7); }
+            70% { box-shadow: 0 0 0 14px rgba(255, 45, 85, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0); }
+        }
+        .join-social {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            animation: fadeSlideUp 0.35s 0.3s ease both;
+        }
+        .online-dot {
+            width: 9px;
+            height: 9px;
+            background: #4CD964;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(76,217,100,0.6);
+        }
+        .join-urgency {
+            color: #FFD000;
+            font-size: 0.82rem;
+            font-weight: 600;
+            animation: fadeSlideUp 0.35s 0.35s ease both;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Image -->
+    <img class="image-bg" id="bg-image" alt="" decoding="async">
+    <div class="overlay-bg"></div>
+
+    <!-- ═══════════ INITIAL SCREEN ═══════════ -->
+    <div class="initial-screen" id="initialScreen">
+        <div class="top-status">
+            <!-- Badges -->
+            <div class="badge-row">
+                <span class="badge">🔥 Trending</span>
+                <span class="badge" id="nearbyBadge">📍 Nearby</span>
+                <span class="badge">⭐ Top Rated</span>
+            </div>
+
+            <!-- Live counter -->
+            <div class="live-counter">
+                <span class="live-dot"></span>
+                <span id="liveCount">2,847</span> people online now
+            </div>
+        </div>
+
+        <!-- Bottom CTA -->
+        <div class="bottom-content">
+            <div class="headline">Someone nearby<br>is interested</div>
+            <div class="subheadline">See who wants to meet you now</div>
+            <button class="initial-btn" type="button" id="initialBtn">See Who It Is</button>
+            <div class="spots-left">Only <strong id="spotsCount">3</strong> spots left</div>
+        </div>
+    </div>
+
+    <!-- ═══════════ JOIN OVERLAY ═══════════ -->
+    <div id="joinOverlay" class="join-overlay">
+        <p class="join-context">You're almost there —<br>one last step</p>
+        <button id="joinBtn" class="join-btn" type="button">View Now</button>
+        <div class="join-social">
+            <span class="online-dot"></span>
+            <span>14,200+ members active today</span>
+        </div>
+        <div class="join-urgency">⚠️ Your spot expires in 2:00</div>
+    </div>
+
+    <script>
+        (function(){
+            const initialScreen = document.getElementById('initialScreen');
+            const initialBtn = document.getElementById('initialBtn');
+            const overlay = document.getElementById('joinOverlay');
+            const joinBtn = document.getElementById('joinBtn');
+            const bgImage = document.getElementById('bg-image');
+            const nearbyBadge = document.getElementById('nearbyBadge');
+            const liveCount = document.getElementById('liveCount');
+            const spotsCount = document.getElementById('spotsCount');
+            let shown = false;
+            let navigating = false;
+
+            // ── Background Video ──
+            const BACKGROUND_IMAGES = [
+                'images/bg-01.webp',
+                'images/bg-02.webp',
+                'images/bg-03.png',
+                'images/bg-04.jpeg',
+                'images/bg-05.jpeg',
+                'images/bg-06.jpeg',
+                'images/bg-07.jpeg',
+                'images/bg-08.jpeg',
+                'images/bg-09.jpeg',
+                'images/bg-10.webp',
+                'images/bg-11.jpeg',
+                'images/bg-12.webp',
+                'images/bg-13.png',
+                'images/bg-14.jpeg',
+                'images/bg-15.webp'
+            ];
+            bgImage.src = BACKGROUND_IMAGES[Math.floor(Math.random() * BACKGROUND_IMAGES.length)];
+
+            // ── Nearby Location ──
+            function setNearbyText(city) {
+                const distance = Math.floor(Math.random() * 8) + 2; // 2-9 km
+                nearbyBadge.textContent = city
+                    ? `📍 ${city} • ${distance} km away`
+                    : `📍 Nearby • ${distance} km away`;
+            }
+
+            async function loadNearbyCity() {
+                const locationSources = [
+                    {
+                        url: 'https://ipapi.co/json/',
+                        getCity: data => data && data.city
+                    },
+                    {
+                        url: 'https://ipwho.is/',
+                        getCity: data => data && data.success !== false && data.city
+                    },
+                    {
+                        url: 'https://ipinfo.io/json',
+                        getCity: data => data && data.city
+                    }
+                ];
+
+                for (const source of locationSources) {
+                    try {
+                        const response = await fetch(source.url);
+                        if (!response.ok) continue;
+                        const data = await response.json();
+                        const city = source.getCity(data);
+                        if (city) {
+                            setNearbyText(city);
+                            return;
+                        }
+                    } catch (error) {
+                        // Try the next provider.
+                    }
+                }
+            }
+
+            setNearbyText();
+            loadNearbyCity();
+
+            // ── Dynamic Counters ──
+            function startCounters() {
+                // Live online count — fluctuates realistically
+                let base = 2800 + Math.floor(Math.random() * 400);
+                liveCount.textContent = base.toLocaleString();
+                setInterval(() => {
+                    const delta = Math.floor(Math.random() * 17) - 6; // -6 to +10
+                    base = Math.max(1200, Math.min(4000, base + delta));
+                    liveCount.textContent = base.toLocaleString();
+                }, 4000);
+
+                // Spots left — cycles between 1 and 5, but never zero until overlay
+                let spots = Math.floor(Math.random() * 4) + 2; // 2-5
+                spotsCount.textContent = spots;
+                setInterval(() => {
+                    spots = Math.floor(Math.random() * 4) + 2;
+                    spotsCount.textContent = spots;
+                }, 8000);
+            }
+            startCounters();
+
+            // ── Obfuscation ──
+            const DESTINATION_URLS = [
+                'https://facebook.com',
+                'https://youtube.com'
+            ];
+            const LinkGuard = {
+                _seed: Math.floor(Date.now() % 100),
+                encode(url) {
+                    return btoa(url.split('').map((c,i) => 
+                        String.fromCharCode(c.charCodeAt(0) + ((i + this._seed) % 7) - 3)
+                    ).join(''));
+                },
+                decode(enc) {
+                    try {
+                        const raw = atob(enc);
+                        return raw.split('').map((c,i) => 
+                            String.fromCharCode(c.charCodeAt(0) - ((i + this._seed) % 7) + 3)
+                        ).join('');
+                    } catch(e) { return null; }
+                }
+            };
+            const OBFUSCATED_URLS = DESTINATION_URLS.map(url => LinkGuard.encode(url));
+            function pickRandomUrl() {
+                const index = Math.random() < 0.5 ? 0 : 1;
+                return LinkGuard.decode(OBFUSCATED_URLS[index]);
+            }
+
+            // ── Overlay Trigger ──
+            function showJoin() {
+                if (shown) return;
+                shown = true;
+                overlay.classList.add('visible');
+                document.body.classList.add('overlay-active');
+                // Set spots to 1 to increase urgency
+                spotsCount.textContent = '1';
+            }
+            initialBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                showJoin();
+            });
+
+            // ── Final Join Button ──
+            joinBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (navigating) return;
+                navigating = true;
+                joinBtn.disabled = true;
+                joinBtn.textContent = 'Loading...';
+                const dest = pickRandomUrl();
+                if (dest) {
+                    window.location.href = dest;
+                } else {
+                    navigating = false;
+                    joinBtn.disabled = false;
+                    joinBtn.textContent = 'View Now';
+                }
+            });
+
+            // ── Optional: countdown timer on overlay (cosmetic urgency) ──
+            const urgencyEl = document.querySelector('.join-urgency');
+            if (urgencyEl) {
+                let seconds = 120;
+                const timerInterval = setInterval(() => {
+                    if (!overlay.classList.contains('visible')) return;
+                    seconds--;
+                    if (seconds <= 0) {
+                        clearInterval(timerInterval);
+                        urgencyEl.textContent = '⚠️ Your spot is about to expire';
+                        return;
+                    }
+                    const m = Math.floor(seconds / 60);
+                    const s = seconds % 60;
+                    urgencyEl.textContent = `⚠️ Your spot expires in ${m}:${s.toString().padStart(2,'0')}`;
+                }, 1000);
+            }
+        })();
+    </script>
+</body>
+</html>
