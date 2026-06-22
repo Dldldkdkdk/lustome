@@ -33,7 +33,7 @@
 <style>
 :root{--pink:#ff1a6b;--purple:#8b5cf6;--gold:#f59e0b;--dark:#09090f;--card:#111120;--border:rgba(255,255,255,.05)}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
+html{scroll-behavior:smooth;font-size:17px}
 body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--dark);color:#fff;line-height:1.6;overflow-x:hidden}
 img{max-width:100%;height:auto;display:block}
 #particles{position:fixed;inset:0;z-index:0;pointer-events:none;contain:strict}
@@ -105,46 +105,52 @@ img{max-width:100%;height:auto;display:block}
 .spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,.08);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .urgency-bar{background:linear-gradient(90deg,var(--pink),var(--purple));padding:4px 10px;text-align:center;font-size:.68rem;font-weight:700;color:#fff;position:relative;z-index:50}
-@media(max-width:768px){
+@media(max-width:760px){
   .ticker.active{display:none}
   .urgency-bar{margin-top:0!important;padding:3px 6px;font-size:.58rem}
-  .hero{padding:15px 0 8px}
-  .hero-badge{font-size:.55rem;padding:3px 8px;margin-bottom:8px}
-  .hero h1{font-size:clamp(1.2rem,5.5vw,1.6rem);margin-bottom:6px}
-  .hero p{font-size:.72rem}
-  .btn-primary{padding:10px 16px;font-size:.75rem}
-  .btn-secondary{padding:8px 14px;font-size:.7rem}
-  .model-card{border-radius:8px;aspect-ratio:3/4}
+  .hero{padding:22px 0 12px}
+  .hero-badge{font-size:.65rem;padding:4px 10px;margin-bottom:10px}
+  .hero h1{font-size:clamp(1.4rem,5.5vw,1.8rem);margin-bottom:8px}
+  .hero p{font-size:.82rem}
+  .btn-primary{padding:12px 18px;font-size:.85rem}
+  .btn-secondary{padding:10px 16px;font-size:.8rem}
+  .model-card{border-radius:10px;aspect-ratio:3/4}
+  .model-badge{font-size:.6rem;padding:3px 8px}
+  .model-views{font-size:.6rem;padding:3px 8px}
   .model-card:hover{transform:none}
   .model-card:hover img{transform:none}
   .model-info{opacity:1;transform:none;padding:8px;background:linear-gradient(transparent 20%,rgba(0,0,0,.95))}
   .modal-box{padding:16px 12px;border-radius:12px}
-  .price-card{padding:10px 8px}
-  .price{font-size:1.2rem}
-  .stat-box{padding:6px 3px;border-radius:6px}
-  .stat-num{font-size:.8rem}
-  .section-heading{font-size:.9rem}
-  .cat-chip{padding:3px 7px;font-size:.55rem}
-  .exit-box{padding:20px 14px;margin:0 8px;border-radius:12px}
-  .toast{bottom:65px;right:6px;left:6px;max-width:none;font-size:.65rem;padding:6px 10px}
-  .sticky-bar{padding:6px 8px}
-  .glass.rounded-3xl{padding:16px 12px!important;border-radius:14px!important}
-  .glass.rounded-2xl{padding:12px!important}
+  .price-card{padding:14px 10px}
+  .price{font-size:1.5rem}
+  .price-card ul li{font-size:.8rem}
+  .stat-box{padding:8px 5px;border-radius:6px}
+  .stat-num{font-size:1rem}
+  .section-heading{font-size:1.05rem}
+  .cat-chip{padding:4px 8px;font-size:.65rem}
+  .exit-box{padding:24px 16px;margin:0 8px;border-radius:12px}
+  .exit-box h2{font-size:1.1rem}
+  .toast{bottom:65px;right:6px;left:6px;max-width:none;font-size:.72rem;padding:8px 12px}
+  .sticky-bar{padding:8px 10px}
+  .sticky-bar .text-xs{font-size:.75rem}
+  .glass.rounded-3xl{padding:20px 16px!important;border-radius:16px!important}
+  .glass.rounded-2xl{padding:16px!important}
   .prog-track{height:4px}
-  .py-10{padding-top:12px!important;padding-bottom:12px!important}
-  .py-12{padding-top:14px!important;padding-bottom:14px!important}
-  #gallery{gap:4px!important}
-  .rounded-2xl.overflow-hidden img{height:200px!important}
+  .py-10{padding-top:16px!important;padding-bottom:16px!important}
+  .py-12{padding-top:18px!important;padding-bottom:18px!important}
+  #gallery{gap:6px!important}
+  .rounded-2xl.overflow-hidden img{height:240px!important}
   #subCats{gap:2px!important;margin-bottom:4px!important}
   #subCats .cat-chip{padding:2px 6px;font-size:.5rem}
   .live-feed{display:none}
+  .modal-box h2{font-size:1.1rem}
   .stat-grid{gap:3px}
-  .mb-8{margin-bottom:8px!important}
-  .mt-6{margin-top:8px!important}
-  .gap-3{gap:6px!important}
-  .gap-4{gap:8px!important}
-  .max-w-7xl{padding-left:8px!important;padding-right:8px!important}
-  .px-3{padding-left:8px;padding-right:8px}
+  .mb-8{margin-bottom:12px!important}
+  .mt-6{margin-top:12px!important}
+  .gap-3{gap:8px!important}
+  .gap-4{gap:10px!important}
+  .max-w-7xl{padding-left:12px!important;padding-right:12px!important}
+  .px-3{padding-left:12px;padding-right:12px}
 }
 </style>
 </head>
@@ -237,7 +243,7 @@ function renderTicker(){const t=id('tickerInner');if(!t)return;t.innerHTML=[...T
 function renderGallery(){const g=id('gallery');if(!g)return;const imgs=shuffle([...GIRLS]).slice(0,12);g.innerHTML=imgs.map((src,i)=>{const n=NAMES[i%NAMES.length]+rn(18,35),a=rn(18,30),d=pick(DISTS),v=rn(200,12000),t=pick(TAGS);return `<div onclick="openModal()" class="model-card"><img src="girls/${src}" alt="Jerkmate live cam model ${n}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'"><div class="model-badge"><span class="dot"></span> Live</div><div class="model-views"><i class="fa-solid fa-eye" style="color:var(--pink)" aria-hidden="true"></i> ${fm(v)}</div><div class="model-info"><div class="name">${n}</div><div class="meta"><span><i class="fa-solid fa-location-dot" style="color:var(--pink)" aria-hidden="true"></i> ${d}</span><span style="margin-left:auto;background:rgba(255,255,255,.08);padding:1px 5px;border-radius:50px;font-weight:700">${a}</span><span style="background:rgba(255,26,107,.15);padding:1px 5px;border-radius:50px;color:var(--pink);font-weight:700;font-size:.45rem">${t}</span></div></div></div>`}).join('')}
 (function(){const c=id('particles');for(let i=0;i<20;i++){const p=document.createElement('div');const w=(Math.random()*2+1)+'px';p.style.cssText='position:absolute;left:'+(Math.random()*100)+'%;width:'+w+';height:'+w+';background:rgba(255,255,255,.3);border-radius:50%;animation:particleFloat '+(Math.random()*15+10)+'s linear infinite;animation-delay:'+(Math.random()*10)+'s;opacity:'+(Math.random()*.3+.1);c.appendChild(p)}})()
 function addItem(){const f=id('liveFeed');if(!f)return;const el=document.createElement('div');el.className='feed-item';el.innerHTML=`<i class="fa-solid fa-circle" aria-hidden="true"></i> ${pick(NAMES_FEED)}${pick(FEED_MSGS).replace('{city}',dc||pick(CITIES))}`;f.appendChild(el);requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),400)},4500)}
-async function detectCity(){const apis=[{url:'https://ipapi.co/json/',fn:d=>d&&d.city?{city:d.city}:null},{url:'https://ipwho.is/',fn:d=>d&&d.success!==false&&d.city?{city:d.city}:null}];for(const api of apis){try{const r=await fetch(api.url,{cache:'no-store'});if(!r.ok)continue;const d=await r.json();const loc=api.fn(d);if(loc&&loc.city){dc=loc.city;updateCity();return}}catch(e){}}}
+async function detectCity(){const apis=[{url:'https://ipapi.co/json/',fn:d=>d&&d.city?{city:d.city}:null},{url:'https://ipwho.is/',fn:d=>d&&d.success!==false&&d.city?{city:d.city}:null},{url:'https://ip-api.com/json/?fields=city',fn:d=>d&&d.status==='success'&&d.city?{city:d.city}:null}];for(const api of apis){try{const r=await fetch(api.url,{cache:'no-store'});if(!r.ok)continue;const d=await r.json();const loc=api.fn(d);if(loc&&loc.city){dc=loc.city;updateCity();return}}catch(e){}}}
 function updateCity(){const c=dc||'your area';['heroCity','heroLocation','galleryCity','progressCity','finalCity','urgentCity'].forEach(i=>{const e=id(i);if(e)e.textContent=c})}
 document.addEventListener('DOMContentLoaded',function(){
   const hi=id('heroImg');if(hi)hi.src='girls/'+pick(GIRLS);
