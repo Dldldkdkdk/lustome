@@ -1,522 +1,255 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>You've Been Selected — Don't Miss Out</title>
-    <script src="https://cdn.tailwindcss.com/3.4.16"></script>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            font-family: system-ui, sans-serif;
-            background: #000;
-            height: 100vh;
-            overflow: hidden;
-            touch-action: manipulation;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        .image-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            z-index: -1;
-        }
-        .overlay-bg {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.45);
-            z-index: 0;
-            transition: background 0.4s ease;
-        }
-        body.overlay-active .overlay-bg {
-            background: rgba(0, 0, 0, 0.7);
-        }
-
-        /* ── Initial Screen ── */
-        .initial-screen {
-            position: fixed;
-            inset: 0;
-            z-index: 10;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 0 20px 40px;
-            transition: opacity 0.25s ease, transform 0.35s ease;
-        }
-        body.overlay-active .initial-screen {
-            opacity: 0;
-            pointer-events: none;
-            transform: translateY(20px);
-        }
-
-        /* Top status */
-        .top-status {
-            position: absolute;
-            top: 28px;
-            left: 0;
-            right: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 12px;
-            padding: 0 16px;
-        }
-        .badge-row {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            width: 100%;
-        }
-        .badge {
-            background: rgba(255,255,255,0.12);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255,255,255,0.2);
-            color: #fff;
-            font-size: 0.7rem;
-            font-weight: 600;
-            letter-spacing: 0.6px;
-            padding: 6px 14px;
-            border-radius: 40px;
-            text-transform: uppercase;
-            white-space: nowrap;
-            animation: fadeSlideDown 0.6s ease both;
-        }
-        .badge:nth-child(2) { animation-delay: 0.08s; }
-        .badge:nth-child(3) { animation-delay: 0.16s; }
-        @keyframes fadeSlideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-
-        /* Live counter */
-        .live-counter {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            width: max-content;
-            max-width: calc(100% - 32px);
-            padding: 9px 14px;
-            background: rgba(0, 0, 0, 0.32);
-            border: 1px solid rgba(255, 255, 255, 0.18);
-            border-radius: 999px;
-            backdrop-filter: blur(12px);
-            -webkit-backdrop-filter: blur(12px);
-            color: #fff;
-            font-size: 0.8rem;
-            font-weight: 500;
-            line-height: 1;
-            white-space: nowrap;
-            box-shadow: 0 10px 28px rgba(0, 0, 0, 0.28);
-            animation: fadeSlideDown 0.6s 0.2s ease both;
-        }
-        .live-dot {
-            width: 9px;
-            height: 9px;
-            background: #4CD964;
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(76,217,100,0.7);
-            flex: 0 0 auto;
-            animation: pulseDot 1.8s infinite;
-        }
-        @keyframes pulseDot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.35; transform: scale(0.75); }
-        }
-        #liveCount {
-            font-weight: 700;
-            color: #4CD964;
-            min-width: 44px;
-            display: inline-block;
-            text-align: center;
-            font-variant-numeric: tabular-nums;
-        }
-
-        /* Bottom content */
-        .bottom-content {
-            text-align: center;
-            animation: fadeSlideUp 0.5s 0.15s ease both;
-        }
-        @keyframes fadeSlideUp {
-            from { opacity: 0; transform: translateY(30px); }
-            to   { opacity: 1; transform: translateY(0); }
-        }
-        .headline {
-            color: #fff;
-            font-size: 2.1rem;
-            font-weight: 800;
-            line-height: 1.15;
-            text-shadow: 0 3px 18px rgba(0,0,0,0.7);
-            letter-spacing: -0.5px;
-            margin-bottom: 6px;
-        }
-        .subheadline {
-            color: rgba(255,255,255,0.8);
-            font-size: 1rem;
-            font-weight: 400;
-            margin-bottom: 22px;
-            text-shadow: 0 1px 8px rgba(0,0,0,0.5);
-        }
-        .initial-btn {
-            background: linear-gradient(135deg, #FF2D55, #FF3B6E);
-            color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.28);
-            padding: 16px 52px;
-            font-size: 1.2rem;
-            font-weight: 700;
-            border-radius: 60px;
-            cursor: pointer;
-            letter-spacing: 0.4px;
-            box-shadow: 0 16px 42px rgba(255,45,85,0.58), 0 0 0 4px rgba(255,255,255,0.16);
-            transition: all 0.2s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .initial-btn::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.2), transparent);
-            border-radius: 60px;
-        }
-        .initial-btn:active {
-            transform: scale(0.96);
-            box-shadow: 0 8px 20px rgba(255,45,85,0.5);
-        }
-        /* Urgency pulse on button */
-        .initial-btn {
-            animation: btnUrgent 2.2s infinite;
-        }
-        @keyframes btnUrgent {
-            0%, 100% { box-shadow: 0 16px 42px rgba(255,45,85,0.58), 0 0 0 4px rgba(255,255,255,0.16); }
-            50% { box-shadow: 0 18px 50px rgba(255,45,85,0.82), 0 0 0 9px rgba(255,45,85,0.18); }
-        }
-        .spots-left {
-            color: rgba(255,255,255,0.7);
-            font-size: 0.78rem;
-            margin-top: 14px;
-            font-weight: 500;
-            animation: fadeSlideUp 0.5s 0.35s ease both;
-        }
-        .spots-left strong {
-            color: #FFD000;
-            font-weight: 700;
-        }
-
-        /* ── Join Overlay ── */
-        .join-overlay {
-            position: fixed;
-            inset: 0;
-            background: rgba(0, 0, 0, 0.88);
-            backdrop-filter: blur(14px);
-            z-index: 10000;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            gap: 20px;
-            padding: 0 28px;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.35s ease;
-        }
-        .join-overlay.visible {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .join-context {
-            color: rgba(255,255,255,0.92);
-            font-size: 1.2rem;
-            font-weight: 600;
-            text-align: center;
-            text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-            animation: fadeSlideUp 0.35s 0.1s ease both;
-        }
-        .join-btn {
-            background: linear-gradient(135deg, #FF2D55, #5851DB);
-            color: #fff;
-            border: none;
-            align-self: center;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: min(100%, 260px);
-            margin: 0 auto;
-            padding: 18px 50px;
-            box-sizing: border-box;
-            font-size: 1.3rem;
-            font-weight: 700;
-            text-align: center;
-            border-radius: 60px;
-            cursor: pointer;
-            letter-spacing: 0.5px;
-            box-shadow: 0 14px 36px rgba(0,0,0,0.55), 0 0 0 3px rgba(255,45,85,0.45);
-            transition: all 0.2s ease;
-            animation: pulseGlow 1.5s infinite;
-        }
-        .join-btn:active {
-            transform: scale(0.96);
-        }
-        .join-btn:disabled {
-            opacity: 0.55;
-            cursor: not-allowed;
-            animation: none;
-        }
-        @keyframes pulseGlow {
-            0% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0.7); }
-            70% { box-shadow: 0 0 0 14px rgba(255, 45, 85, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(255, 45, 85, 0); }
-        }
-        .join-social {
-            color: rgba(255,255,255,0.6);
-            font-size: 0.85rem;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            animation: fadeSlideUp 0.35s 0.3s ease both;
-        }
-        .online-dot {
-            width: 9px;
-            height: 9px;
-            background: #4CD964;
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(76,217,100,0.6);
-        }
-        .join-urgency {
-            color: #FFD000;
-            font-size: 0.82rem;
-            font-weight: 600;
-            animation: fadeSlideUp 0.35s 0.35s ease both;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no">
+<title>Jerkmate Free Access 2026 — No Credit Card Live Cams | lustome.fun</title>
+<meta name="description" content="Get Jerkmate free access in 2026. Browse 150M+ monthly visitors favourite live cam site. No credit card, no sign up needed. Start free live cams near you now.">
+<meta name="keywords" content="jerkmate free, jerkmate free access, free live cams, adult cam site, live cam models, free adult cams, no credit card cams, jerkmate 2026, free sex cams, live sex shows">
+<meta name="robots" content="index,follow,max-snippet:-1,max-image-preview:large,max-video-preview:-1">
+<link rel="canonical" href="https://lustome.fun/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Jerkmate Free Access 2026 — Live Cams No Credit Card">
+<meta property="og:description" content="Get Jerkmate free access instantly. Browse thousands of live cam models. No credit card, no sign up required. Join 150M+ monthly visitors.">
+<meta property="og:url" content="https://lustome.fun/">
+<meta property="og:site_name" content="JerkHub">
+<meta property="og:image" content="https://lustome.fun/img/og-jerkhub-main.webp">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:locale" content="en_US">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Jerkmate Free Access 2026 — No Credit Card Live Cams">
+<meta name="twitter:description" content="Get Jerkmate free access instantly. No credit card. No sign up. Browse thousands of live cam models now.">
+<meta name="twitter:image" content="https://lustome.fun/img/og-jerkhub-main.webp">
+<link rel="icon" type="image/x-icon" href="favicon/favi.ico">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebSite","name":"JerkHub","url":"https://lustome.fun/","description":"Your #1 guide to Jerkmate free access, live cam shows, and premium adult entertainment in 2026."}</script>
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[{"@type":"Question","name":"Is Jerkmate really free?","acceptedAnswer":{"@type":"Answer","text":"Yes, Jerkmate offers genuine free access. You can browse live cam models, use the Jerky AI matchmaking bot, and enjoy free sex games without paying anything."}},{"@type":"Question","name":"Do I need a credit card for Jerkmate free access?","acceptedAnswer":{"@type":"Answer","text":"No credit card is required to create a free Jerkmate account. You can register with just an email address and start browsing live cam models instantly."}},{"@type":"Question","name":"How many models are on Jerkmate?","acceptedAnswer":{"@type":"Answer","text":"Jerkmate hosts thousands of live cam models available 24/7. The platform attracts over 150 million monthly visits worldwide."}},{"@type":"Question","name":"Is Jerkmate safe and legit?","acceptedAnswer":{"@type":"Answer","text":"Yes, Jerkmate is 100% legit. It is a Top 10 adult site and Top 100 most visited site in the United States."}},{"@type":"Question","name":"Can I use Jerkmate on mobile?","acceptedAnswer":{"@type":"Answer","text":"Absolutely. Jerkmate is fully optimized for any device including desktop, tablet, and mobile. No app download required."}}]}</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" media="print" onload="this.media='all'">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--pink:#ff1a6b;--purple:#8b5cf6;--gold:#f59e0b;--dark:#09090f;--card:#111120;--border:rgba(255,255,255,.05)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--dark);color:#fff;line-height:1.6;overflow-x:hidden}
+img{max-width:100%;height:auto;display:block}
+#particles{position:fixed;inset:0;z-index:0;pointer-events:none;contain:strict}
+.glow{position:fixed;width:700px;height:700px;border-radius:50%;pointer-events:none;z-index:0;filter:blur(140px);opacity:.1}
+.glow-1{top:-300px;left:-200px;background:var(--pink);animation:glowPulse 8s ease-in-out infinite}
+.glow-2{bottom:-400px;right:-200px;background:var(--purple);animation:glowPulse 8s ease-in-out infinite 4s}
+@keyframes glowPulse{0%,100%{transform:scale(1);opacity:.1}50%{transform:scale(1.3);opacity:.15}}
+.glass{background:rgba(17,17,32,.85);border:1px solid var(--border);backdrop-filter:blur(24px)}
+.btn-primary{position:relative;overflow:hidden;background:linear-gradient(135deg,var(--pink),var(--purple));border:none;border-radius:50px;padding:14px 28px;font-weight:800;font-size:.9rem;color:#fff;cursor:pointer;transition:transform .2s;box-shadow:0 8px 40px rgba(255,26,107,.3);display:inline-flex;align-items:center;gap:8px;text-transform:uppercase}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 50px rgba(255,26,107,.5)}
+.btn-secondary{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);border-radius:50px;padding:12px 26px;font-weight:700;font-size:.85rem;color:#fff;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-secondary:hover{background:rgba(255,255,255,.08);transform:translateY(-2px)}
+.hero{position:relative;z-index:10;padding:50px 0 30px;overflow:hidden;min-height:auto;display:flex;align-items:center}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(255,26,107,.08);border:1px solid rgba(255,26,107,.15);padding:5px 14px;border-radius:50px;font-size:.7rem;font-weight:700;text-transform:uppercase;color:var(--pink);margin-bottom:18px}
+.hero-badge .pulse{width:6px;height:6px;background:#10b981;border-radius:50%;animation:pulseDot 1.5s ease-in-out infinite}
+@keyframes pulseDot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.3;transform:scale(1.5)}}
+.hero h1{font-size:clamp(1.8rem,5vw,3rem);font-weight:900;line-height:1.05;margin-bottom:14px}
+.model-card{position:relative;overflow:hidden;border-radius:12px;cursor:pointer;border:1px solid var(--border);aspect-ratio:2/3;transition:transform .3s;background:var(--card)}
+.model-card:hover{transform:translateY(-4px) scale(1.01);border-color:rgba(255,26,107,.3);box-shadow:0 15px 40px rgba(255,26,107,.1);z-index:5}
+.model-card img{width:100%;height:100%;object-fit:cover;transition:transform .3s}
+.model-card:hover img{transform:scale(1.05)}
+.model-badge{position:absolute;top:6px;left:6px;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border-radius:50px;padding:2px 7px;font-size:.5rem;font-weight:700;display:flex;align-items:center;gap:3px}
+.model-badge .dot{width:4px;height:4px;background:#10b981;border-radius:50%;animation:pulseDot 1.5s infinite}
+.model-views{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.5);backdrop-filter:blur(8px);border-radius:50px;padding:2px 7px;font-size:.5rem;font-weight:700;display:flex;align-items:center;gap:3px}
+.model-info{position:absolute;bottom:0;left:0;right:0;padding:10px;background:linear-gradient(transparent,rgba(0,0,0,.92));transform:translateY(14px);opacity:0;transition:all .3s}
+.model-card:hover .model-info{transform:translateY(0);opacity:1}
+.model-info .name{font-size:.75rem;font-weight:800}
+.model-info .meta{display:flex;align-items:center;gap:3px;font-size:.6rem;color:rgba(255,255,255,.55);margin-top:2px}
+.section-label{font-size:.65rem;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--pink);margin-bottom:4px}
+.section-heading{font-size:clamp(1.1rem,2.5vw,1.5rem);font-weight:800;line-height:1.2}
+.stat-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:5px}
+@media(max-width:640px){.stat-grid{grid-template-columns:repeat(3,1fr)}}
+.stat-box{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:8px;padding:10px 5px;text-align:center}
+.stat-num{font-size:1.1rem;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text}
+.stat-lbl{color:rgba(255,255,255,.35);font-size:.6rem;font-weight:600;text-transform:uppercase;margin-top:2px}
+.cat-chip{padding:4px 10px;border-radius:50px;font-size:.65rem;font-weight:700;text-transform:uppercase;border:1px solid rgba(255,255,255,.08);cursor:pointer;transition:all .2s;background:rgba(255,255,255,.02);color:rgba(255,255,255,.6);display:inline-flex;align-items:center;gap:4px}
+.cat-chip:hover,.cat-chip.active{background:rgba(255,26,107,.15);border-color:rgba(255,26,107,.3);color:#fff}
+.price-card{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:12px;padding:16px 14px;text-align:center;transition:all .3s}
+.price-card:hover{border-color:rgba(255,26,107,.2);transform:translateY(-3px)}
+.price-card.featured{border-color:rgba(255,26,107,.3);background:rgba(255,26,107,.04)}
+.price{font-size:1.6rem;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text}
+.price-card ul{list-style:none;margin:10px 0;text-align:left}
+.price-card ul li{padding:4px 0;font-size:.7rem;color:rgba(255,255,255,.55);display:flex;align-items:center;gap:6px}
+.ticker{position:fixed;top:0;left:0;right:0;z-index:9999;background:linear-gradient(90deg,var(--pink),var(--purple));padding:5px 0;overflow:hidden;height:26px;display:none}
+.ticker.active{display:block}
+.ticker-inner{display:flex;white-space:nowrap;animation:tick 25s linear infinite}
+.ticker-item{padding:0 25px;font-size:.65rem;font-weight:700;color:#fff;display:inline-flex;align-items:center;gap:5px}
+@keyframes tick{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+.prog-track{background:rgba(255,255,255,.05);border-radius:20px;height:5px;overflow:hidden}
+.prog-bar{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--pink),var(--purple),var(--gold));width:72%}
+.toast{position:fixed;bottom:70px;right:10px;z-index:100;background:rgba(17,17,32,.95);backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:10px;padding:8px 12px;font-size:.72rem;font-weight:600;color:#fff;box-shadow:0 15px 40px rgba(0,0,0,.6);transform:translateY(20px);opacity:0;transition:all .4s;max-width:260px;pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+.live-feed{position:fixed;bottom:70px;left:10px;z-index:100;display:flex;flex-direction:column;gap:3px;pointer-events:none}
+.feed-item{background:rgba(17,17,32,.9);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.05);border-radius:6px;padding:4px 8px;font-size:.58rem;color:rgba(255,255,255,.7);display:flex;align-items:center;gap:4px;max-width:200px;transform:translateX(-15px);opacity:0;transition:all .35s}
+.feed-item.show{transform:translateX(0);opacity:1}
+.feed-item .fa-circle{font-size:.3rem;color:#10b981}
+.exit-popup{position:fixed;inset:0;z-index:9998;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.92);backdrop-filter:blur(30px);padding:20px}
+.exit-popup.active{display:flex}
+.exit-box{background:var(--card);border:1px solid rgba(255,26,107,.12);border-radius:16px;padding:28px 22px;max-width:380px;width:100%;text-align:center}
+.exit-box h2{font-size:1.3rem;font-weight:900}
+.modal-overlay{position:fixed;inset:0;z-index:200;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.85);backdrop-filter:blur(16px);padding:16px}
+.modal-overlay.active{display:flex}
+.modal-box{background:var(--card);border:1px solid rgba(255,26,107,.1);border-radius:16px;padding:22px;max-width:400px;width:100%}
+.modal-box h2{font-size:1.2rem;font-weight:900}
+.sticky-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(9,9,15,.97);backdrop-filter:blur(24px);border-top:1px solid rgba(255,26,107,.12);padding:8px 14px;z-index:999;transform:translateY(100%);transition:transform .5s}
+.sticky-bar.show{transform:translateY(0)}
+.loader{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.92);backdrop-filter:blur(24px)}
+.loader.active{display:flex}
+.spinner{width:24px;height:24px;border:3px solid rgba(255,255,255,.08);border-top-color:#fff;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.urgency-bar{background:linear-gradient(90deg,var(--pink),var(--purple));padding:4px 10px;text-align:center;font-size:.68rem;font-weight:700;color:#fff;position:relative;z-index:50}
+@media(max-width:768px){
+  .ticker.active{display:none}
+  .urgency-bar{margin-top:0!important;padding:3px 6px;font-size:.58rem}
+  .hero{padding:15px 0 8px}
+  .hero-badge{font-size:.55rem;padding:3px 8px;margin-bottom:8px}
+  .hero h1{font-size:clamp(1.2rem,5.5vw,1.6rem);margin-bottom:6px}
+  .hero p{font-size:.72rem}
+  .btn-primary{padding:10px 16px;font-size:.75rem}
+  .btn-secondary{padding:8px 14px;font-size:.7rem}
+  .model-card{border-radius:8px;aspect-ratio:3/4}
+  .model-card:hover{transform:none}
+  .model-card:hover img{transform:none}
+  .model-info{opacity:1;transform:none;padding:8px;background:linear-gradient(transparent 20%,rgba(0,0,0,.95))}
+  .modal-box{padding:16px 12px;border-radius:12px}
+  .price-card{padding:10px 8px}
+  .price{font-size:1.2rem}
+  .stat-box{padding:6px 3px;border-radius:6px}
+  .stat-num{font-size:.8rem}
+  .section-heading{font-size:.9rem}
+  .cat-chip{padding:3px 7px;font-size:.55rem}
+  .exit-box{padding:20px 14px;margin:0 8px;border-radius:12px}
+  .toast{bottom:65px;right:6px;left:6px;max-width:none;font-size:.65rem;padding:6px 10px}
+  .sticky-bar{padding:6px 8px}
+  .glass.rounded-3xl{padding:16px 12px!important;border-radius:14px!important}
+  .glass.rounded-2xl{padding:12px!important}
+  .prog-track{height:4px}
+  .py-10{padding-top:12px!important;padding-bottom:12px!important}
+  .py-12{padding-top:14px!important;padding-bottom:14px!important}
+  #gallery{gap:4px!important}
+  .rounded-2xl.overflow-hidden img{height:200px!important}
+  #subCats{gap:2px!important;margin-bottom:4px!important}
+  #subCats .cat-chip{padding:2px 6px;font-size:.5rem}
+  .live-feed{display:none}
+  .stat-grid{gap:3px}
+  .mb-8{margin-bottom:8px!important}
+  .mt-6{margin-top:8px!important}
+  .gap-3{gap:6px!important}
+  .gap-4{gap:8px!important}
+  .max-w-7xl{padding-left:8px!important;padding-right:8px!important}
+  .px-3{padding-left:8px;padding-right:8px}
+}
+</style>
 </head>
 <body>
-
-    <!-- Background Image -->
-    <img class="image-bg" id="bg-image" alt="" decoding="async">
-    <div class="overlay-bg"></div>
-
-    <!-- ═══════════ INITIAL SCREEN ═══════════ -->
-    <div class="initial-screen" id="initialScreen">
-        <div class="top-status">
-            <!-- Badges -->
-            <div class="badge-row">
-                <span class="badge">🔥 Trending</span>
-                <span class="badge" id="nearbyBadge">📍 Nearby</span>
-                <span class="badge">⭐ Top Rated</span>
-            </div>
-
-            <!-- Live counter -->
-            <div class="live-counter">
-                <span class="live-dot"></span>
-                <span id="liveCount">2,847</span> people online now
-            </div>
-        </div>
-
-        <!-- Bottom CTA -->
-        <div class="bottom-content">
-            <div class="headline">Someone nearby<br>is interested</div>
-            <div class="subheadline">See who wants to meet you now</div>
-            <button class="initial-btn" type="button" id="initialBtn">See Who It Is</button>
-            <div class="spots-left">Only <strong id="spotsCount">3</strong> spots left</div>
-        </div>
+<div id="particles"></div>
+<div class="glow glow-1"></div>
+<div class="glow glow-2"></div>
+<div class="ticker active" id="ticker"><div class="ticker-inner" id="tickerInner"></div></div>
+<div class="urgency-bar"><i class="fa-solid fa-bolt" aria-hidden="true"></i> <span id="urgentCity">Your Area</span>: <strong id="urgentCount">18,742</strong> watching Jerkmate free — <span id="urgentSeats">4</span> spots left!</div>
+<header class="sticky top-0 z-50" style="background:rgba(9,9,15,.92);backdrop-filter:blur(24px);border-bottom:1px solid rgba(255,255,255,.03)">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 flex items-center justify-between h-10">
+    <a href="/" class="logo flex items-center gap-1.5" style="font-size:1.1rem;font-weight:900;background:linear-gradient(135deg,var(--pink),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent"><i class="fa-solid fa-fire" style="color:var(--pink);-webkit-text-fill-color:initial;font-size:.8rem" aria-hidden="true"></i> Jerk<span style="color:var(--gold);-webkit-text-fill-color:var(--gold)">Hub</span></a>
+    <div class="flex items-center gap-1.5">
+      <div class="flex items-center gap-1 bg-white/[.03] border border-white/[.05] rounded-full px-2 py-0.5"><span class="w-1.5 h-1.5 rounded-full bg-[#10b981]" style="animation:pulseDot 1.5s infinite" aria-hidden="true"></span><span class="text-[10px] font-semibold text-white/60"><span id="liveCount">18.7K</span></span></div>
+      <button onclick="openModal()" class="btn-primary text-[10px] !py-1 !px-2.5"><i class="fa-solid fa-fire" aria-hidden="true"></i> Free</button>
     </div>
-
-    <!-- ═══════════ JOIN OVERLAY ═══════════ -->
-    <div id="joinOverlay" class="join-overlay">
-        <p class="join-context">You're almost there —<br>one last step</p>
-        <button id="joinBtn" class="join-btn" type="button">View Now</button>
-        <div class="join-social">
-            <span class="online-dot"></span>
-            <span>14,200+ members active today</span>
+  </div>
+</header>
+<div class="live-feed" id="liveFeed" aria-hidden="true"></div>
+<section class="hero">
+  <div class="max-w-7xl mx-auto px-3 sm:px-6 w-full">
+    <div class="grid lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+      <div>
+        <div class="hero-badge"><span class="pulse" aria-hidden="true"></span> <span id="heroBadge">18,742 Watching Jerkmate Free</span></div>
+        <h1 style="background:linear-gradient(135deg,#fff 20%,var(--pink) 50%,var(--purple) 80%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">Jerkmate Free Access — Live Cams No Credit Card</h1>
+        <p class="text-sm text-white/45 max-w-lg leading-relaxed">Join <strong class="text-white/80">18,742 people</strong> on Jerkmate free in <strong id="heroCity" class="text-white/80">your area</strong>. No credit card. Just instant live cam shows.</p>
+        <div class="flex flex-wrap gap-2 mt-4"><button onclick="openModal()" class="btn-primary">🔥 Free Access</button><button onclick="goPremium()" class="btn-secondary"><i class="fa-solid fa-crown" style="color:var(--gold)" aria-hidden="true"></i> Premium</button></div>
+        <div class="flex flex-wrap gap-x-3 gap-y-1.5 mt-3 text-[10px] font-medium text-white/30"><span><i class="fa-solid fa-check" style="color:var(--pink)" aria-hidden="true"></i> <span id="heroCount">18,742</span> watching Jerkmate</span><span><i class="fa-solid fa-shield" style="color:var(--purple)" aria-hidden="true"></i> 100% Secure</span><span><i class="fa-solid fa-mobile" style="color:var(--gold)" aria-hidden="true"></i> Mobile friendly</span><span><i class="fa-solid fa-location-dot" style="color:var(--pink)" aria-hidden="true"></i> <span id="heroLocation">Near you</span></span></div>
+        <div class="flex flex-wrap gap-1.5 mt-3" id="catTags" aria-label="Categories"></div>
+      </div>
+      <div class="relative flex justify-center">
+        <div class="w-full max-w-sm relative">
+          <div class="rounded-xl overflow-hidden border border-white/[.06]">
+            <img id="heroImg" src="girls/bg-01.webp" fetchpriority="high" decoding="sync" alt="Jerkmate free live cam" class="w-full h-[300px] sm:h-[380px] object-cover">
+            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" aria-hidden="true"></div>
+            <div class="absolute bottom-2 left-3 right-3 flex items-center gap-2 text-xs font-semibold text-white/80"><span class="w-1.5 h-1.5 rounded-full bg-[#10b981]" style="animation:pulseDot 1.5s infinite" aria-hidden="true"></span><span><strong id="heroViewers">18.7K</strong> watching Jerkmate</span><span class="ml-auto text-[9px] bg-black/30 px-2 py-0.5 rounded-full">18+</span></div>
+            <div class="absolute top-2 left-2 bg-black/30 backdrop-blur-md rounded-full px-2 py-0.5 text-[9px] font-bold flex items-center gap-1"><i class="fa-solid fa-eye" style="color:var(--pink)" aria-hidden="true"></i><span id="heroViewers2">18.7K</span></div>
+            <div class="absolute top-2 right-2 bg-[#ff1a6b]/80 backdrop-blur-md rounded-full px-2 py-0.5 text-[9px] font-bold">HD</div>
+          </div>
         </div>
-        <div class="join-urgency">⚠️ Your spot expires in 2:00</div>
+      </div>
     </div>
-
-    <script>
-        (function(){
-            const initialScreen = document.getElementById('initialScreen');
-            const initialBtn = document.getElementById('initialBtn');
-            const overlay = document.getElementById('joinOverlay');
-            const joinBtn = document.getElementById('joinBtn');
-            const bgImage = document.getElementById('bg-image');
-            const nearbyBadge = document.getElementById('nearbyBadge');
-            const liveCount = document.getElementById('liveCount');
-            const spotsCount = document.getElementById('spotsCount');
-            let shown = false;
-            let navigating = false;
-
-            // ── Background Video ──
-            const BACKGROUND_IMAGES = [
-                'images/bg-01.webp',
-                'images/bg-02.webp',
-                'images/bg-03.png',
-                'images/bg-04.jpeg',
-                'images/bg-05.jpeg',
-                'images/bg-06.jpeg',
-                'images/bg-07.jpeg',
-                'images/bg-08.jpeg',
-                'images/bg-09.jpeg',
-                'images/bg-10.webp',
-                'images/bg-11.jpeg',
-                'images/bg-12.webp',
-                'images/bg-13.png',
-                'images/bg-14.jpeg',
-                'images/bg-15.webp'
-            ];
-            bgImage.src = BACKGROUND_IMAGES[Math.floor(Math.random() * BACKGROUND_IMAGES.length)];
-
-            // ── Nearby Location ──
-            function setNearbyText(city) {
-                const distance = Math.floor(Math.random() * 8) + 2; // 2-9 km
-                nearbyBadge.textContent = city
-                    ? `📍 ${city} • ${distance} km away`
-                    : `📍 Nearby • ${distance} km away`;
-            }
-
-            async function loadNearbyCity() {
-                const locationSources = [
-                    {
-                        url: 'https://ipapi.co/json/',
-                        getCity: data => data && data.city
-                    },
-                    {
-                        url: 'https://ipwho.is/',
-                        getCity: data => data && data.success !== false && data.city
-                    },
-                    {
-                        url: 'https://ipinfo.io/json',
-                        getCity: data => data && data.city
-                    }
-                ];
-
-                for (const source of locationSources) {
-                    try {
-                        const response = await fetch(source.url);
-                        if (!response.ok) continue;
-                        const data = await response.json();
-                        const city = source.getCity(data);
-                        if (city) {
-                            setNearbyText(city);
-                            return;
-                        }
-                    } catch (error) {
-                        // Try the next provider.
-                    }
-                }
-            }
-
-            setNearbyText();
-            loadNearbyCity();
-
-            // ── Dynamic Counters ──
-            function startCounters() {
-                // Live online count — fluctuates realistically
-                let base = 2800 + Math.floor(Math.random() * 400);
-                liveCount.textContent = base.toLocaleString();
-                setInterval(() => {
-                    const delta = Math.floor(Math.random() * 17) - 6; // -6 to +10
-                    base = Math.max(1200, Math.min(4000, base + delta));
-                    liveCount.textContent = base.toLocaleString();
-                }, 4000);
-
-                // Spots left — cycles between 1 and 5, but never zero until overlay
-                let spots = Math.floor(Math.random() * 4) + 2; // 2-5
-                spotsCount.textContent = spots;
-                setInterval(() => {
-                    spots = Math.floor(Math.random() * 4) + 2;
-                    spotsCount.textContent = spots;
-                }, 8000);
-            }
-            startCounters();
-
-            // ── Obfuscation ──
-            const DESTINATION_URLS = [
-                'https://facebook.com',
-                'https://youtube.com'
-            ];
-            const LinkGuard = {
-                _seed: Math.floor(Date.now() % 100),
-                encode(url) {
-                    return btoa(url.split('').map((c,i) => 
-                        String.fromCharCode(c.charCodeAt(0) + ((i + this._seed) % 7) - 3)
-                    ).join(''));
-                },
-                decode(enc) {
-                    try {
-                        const raw = atob(enc);
-                        return raw.split('').map((c,i) => 
-                            String.fromCharCode(c.charCodeAt(0) - ((i + this._seed) % 7) + 3)
-                        ).join('');
-                    } catch(e) { return null; }
-                }
-            };
-            const OBFUSCATED_URLS = DESTINATION_URLS.map(url => LinkGuard.encode(url));
-            function pickRandomUrl() {
-                const index = Math.random() < 0.5 ? 0 : 1;
-                return LinkGuard.decode(OBFUSCATED_URLS[index]);
-            }
-
-            // ── Overlay Trigger ──
-            function showJoin() {
-                if (shown) return;
-                shown = true;
-                overlay.classList.add('visible');
-                document.body.classList.add('overlay-active');
-                // Set spots to 1 to increase urgency
-                spotsCount.textContent = '1';
-            }
-            initialBtn.addEventListener('click', (e) => {
-                e.stopPropagation();
-                showJoin();
-            });
-
-            // ── Final Join Button ──
-            joinBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if (navigating) return;
-                navigating = true;
-                joinBtn.disabled = true;
-                joinBtn.textContent = 'Loading...';
-                const dest = pickRandomUrl();
-                if (dest) {
-                    window.location.href = dest;
-                } else {
-                    navigating = false;
-                    joinBtn.disabled = false;
-                    joinBtn.textContent = 'View Now';
-                }
-            });
-
-            // ── Optional: countdown timer on overlay (cosmetic urgency) ──
-            const urgencyEl = document.querySelector('.join-urgency');
-            if (urgencyEl) {
-                let seconds = 120;
-                const timerInterval = setInterval(() => {
-                    if (!overlay.classList.contains('visible')) return;
-                    seconds--;
-                    if (seconds <= 0) {
-                        clearInterval(timerInterval);
-                        urgencyEl.textContent = '⚠️ Your spot is about to expire';
-                        return;
-                    }
-                    const m = Math.floor(seconds / 60);
-                    const s = seconds % 60;
-                    urgencyEl.textContent = `⚠️ Your spot expires in ${m}:${s.toString().padStart(2,'0')}`;
-                }, 1000);
-            }
-        })();
-    </script>
+  </div>
+</section>
+<section class="relative z-10 mt-4 mb-6"><div class="max-w-6xl mx-auto px-3"><div class="stat-grid"><div class="stat-box"><div class="stat-num">150M+</div><div class="stat-lbl">Monthly Visits</div></div><div class="stat-box"><div class="stat-num">$90M+</div><div class="stat-lbl">Commissions</div></div><div class="stat-box"><div class="stat-num">#10</div><div class="stat-lbl">Adult Site</div></div><div class="stat-box"><div class="stat-num">Top100</div><div class="stat-lbl">US Rank</div></div><div class="stat-box"><div class="stat-num">24/7</div><div class="stat-lbl">Live Models</div></div><div class="stat-box"><div class="stat-num"><60s</div><div class="stat-lbl">Free Sign Up</div></div></div></div></section>
+<section class="relative z-10 py-10"><div class="max-w-7xl mx-auto px-3 sm:px-6"><div class="text-center mb-5"><p class="section-label text-center" style="display:flex;align-items:center;justify-content:center;gap:5px"><i class="fa-solid fa-gem" aria-hidden="true"></i> Jerkmate Free vs Premium</p><h2 class="section-heading">Choose Your Jerkmate Plan</h2></div>
+<div class="grid sm:grid-cols-3 gap-3 max-w-3xl mx-auto">
+<div class="price-card"><h3>Free</h3><div class="price">$0</div><p class="text-[10px] text-white/30 mb-3">Jerkmate free access</p><ul><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Browse live models</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> AI matchmaking</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Free sex games</li><li><i class="fa-solid fa-check" style="opacity:.3;color:#fff;font-size:.6rem"></i> Private shows</li><li><i class="fa-solid fa-check" style="opacity:.3;color:#fff;font-size:.6rem"></i> Cam-to-Cam</li></ul><button onclick="openModal()" class="btn-primary text-xs !py-1.5 !px-4 w-full justify-center">Free</button></div>
+<div class="price-card featured"><div class="text-[9px] font-black uppercase tracking-wider" style="color:var(--gold)">⭐ Best Value</div><h3>Premium</h3><div class="price">$9.99</div><p class="text-[10px] text-white/30 mb-3">/month</p><ul><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Everything in Free</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Private shows</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Cam-to-Cam</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Gold Shows</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> HD streaming</li></ul><button onclick="goPremium()" class="btn-primary text-xs !py-1.5 !px-4 w-full justify-center">Upgrade</button></div>
+<div class="price-card"><h3>VIP</h3><div class="price">$24.99</div><p class="text-[10px] text-white/30 mb-3">/month</p><ul><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Everything in Premium</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Exclusive content</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> Priority support</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> No ads</li><li><i class="fa-solid fa-check" style="color:var(--pink);font-size:.6rem"></i> 4K streaming</li></ul><button onclick="goPremium()" class="btn-secondary text-xs !py-1.5 !px-4 w-full justify-center">VIP</button></div></div></div></section>
+<section class="relative z-10 py-10"><div class="max-w-7xl mx-auto px-3 sm:px-6"><div class="flex items-end justify-between mb-3 flex-wrap gap-2"><div><p class="section-label">🔥 <span id="galleryLiveCount">18.7K</span> Watching Jerkmate</p><h2 class="section-heading">Featured Models <span id="galleryCity">Near You</span></h2></div><button onclick="openModal()" class="btn-primary text-xs !py-1.5 !px-3">Free Access</button></div><div class="flex flex-wrap gap-1.5 mb-3" id="subCats" aria-label="Categories"></div><div id="gallery" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2" aria-label="Jerkmate models"></div></div></section>
+<section class="relative z-10 py-10"><div class="max-w-5xl mx-auto px-3"><div class="glass rounded-2xl p-4"><div class="flex items-center justify-between mb-2"><div><p class="section-label">⚡ <span id="progressCity">Your Area</span></p><h3 class="text-sm font-bold"><span id="progressCount">18,742</span> on Jerkmate Now</h3></div><div class="text-right"><span class="text-lg font-black" style="color:var(--pink)" id="progressPct">92</span><span class="text-lg font-black" style="color:var(--pink)">%</span><p class="text-[9px] text-white/30">capacity</p></div></div><div class="prog-track"><div class="prog-bar"></div></div><div class="flex justify-between mt-2 text-[9px] text-white/25"><span>🔥 <span id="seatsLeft">4</span> free spots</span><span id="countdownDisplay">09:59</span></div></div></div></section>
+<section class="relative z-10 py-12"><div class="max-w-2xl mx-auto px-3 text-center"><div class="glass rounded-3xl p-8 sm:p-10 relative overflow-hidden"><p class="section-label" style="display:flex;align-items:center;justify-content:center;gap:5px"><i class="fa-solid fa-bolt" aria-hidden="true"></i> <span id="finalCountDisplay">18,742</span> on Jerkmate Now</p><h2 class="text-xl sm:text-2xl font-black mb-3 mt-1">🔥 Get Jerkmate Free Access</h2><p class="text-white/50 mb-4 max-w-md mx-auto text-sm"><span id="finalCity">Your area</span> — <strong id="finalSeats">4</strong> free spots. No credit card needed.</p><button onclick="openModal()" class="btn-primary text-sm">🔥 Start FREE on Jerkmate</button></div></div></section>
+<footer class="relative z-10 border-t border-white/[.03] py-6"><div class="max-w-7xl mx-auto px-3 text-center text-[10px] text-white/15"><p>© 2026 JerkHub — Independent Jerkmate affiliate guide. 18+ only. This site contains affiliate links.</p><p class="mt-1">Jerkmate free access, live cams, no credit card required. Updated 2026.</p></div></footer>
+<div class="sticky-bar" id="stickyBar"><div class="max-w-7xl mx-auto flex items-center justify-center gap-2 flex-wrap"><p class="text-xs font-semibold"><span class="w-1.5 h-1.5 rounded-full bg-[#10b981] inline-block" style="animation:pulseDot 1.5s infinite;vertical-align:middle;margin-right:3px" aria-hidden="true"></span> <span id="stickyCount">18,742</span> on Jerkmate — <span id="stickySeats">4</span> free</p><button onclick="openModal()" class="btn-primary text-[10px] !py-1 !px-3">Get Jerkmate Free</button></div></div>
+<div class="toast" id="toast"><i class="fa-solid fa-bolt" style="color:var(--gold)" aria-hidden="true"></i> <span id="toastMsg">Someone just got Jerkmate free access</span></div>
+<div class="exit-popup" id="exitPopup"><div class="exit-box"><div class="text-3xl mb-3" aria-hidden="true">🔥</div><h2>Wait! Get Jerkmate Free!</h2><p>Free access still available in <span id="exitCity">your area</span>. <strong id="exitSeats">4</strong> spots left.</p><button onclick="closeExit();openModal()" class="btn-primary w-full justify-center text-sm"><i class="fa-solid fa-fire" aria-hidden="true"></i> Claim Jerkmate Free</button><button onclick="closeExit()" class="text-xs text-white/25 mt-2 hover:text-white/50">No thanks</button></div></div>
+<div class="modal-overlay" id="modal"><div class="modal-box"><div class="flex items-start justify-between mb-4"><div><p class="section-label"><i class="fa-solid fa-fire" aria-hidden="true"></i> Join <span id="modalCount">18,742</span></p><h2>🔥 Jerkmate Free Access</h2><p class="text-sm text-white/35">No credit card. Instant access.</p></div><button onclick="closeModal()" class="w-7 h-7 rounded-xl bg-white/[.03] flex items-center justify-center flex-shrink-0"><i class="fa-solid fa-xmark text-white/40" style="font-size:.8rem" aria-hidden="true"></i></button></div><button onclick="goSmartlink()" class="btn-primary w-full justify-center text-sm">🔥 Get Jerkmate Free</button><button onclick="closeModal()" class="w-full text-center text-xs text-white/25 mt-2 hover:text-white/50">Not now</button></div></div>
+<div class="loader" id="loader"><div class="text-center max-w-sm px-6"><div class="spinner"></div><h3 class="text-sm font-black mb-1">Opening Jerkmate Free</h3><p class="text-xs text-white/50">Taking you to Jerkmate...</p></div></div>
+<script>
+const AFF_URL="https://t.ajrkmx1.com/331727/6224/0?source=PASITE&po=6533&aff_sub5=SF_006OG000004lmDN";
+const PREM_URL="https://t.ajrkmx1.com/331727/8780/0?source=PASITE&po=6533&aff_sub5=SF_006OG000004lmDN";
+const GIRLS=["bg-01.webp","bg-02.webp","bg-03.png","bg-04.jpeg","bg-05.jpeg","bg-06.jpeg","bg-07.jpeg","bg-08.jpeg","bg-09.jpeg","bg-10.webp","bg-11.jpeg","bg-12.webp","bg-13.png","bg-14.jpeg","bg-15.webp"];
+const NAMES=["Aria","Bella","Camila","Diana","Elena","Freya","Gia","Hannah","Ivy","Jade","Kira","Luna","Maya","Nova","Olivia","Piper","Quinn","Rosa","Stella","Tara","Uma","Violet","Willa","Xena","Yara","Zara","Aisha","Bianca","Cleo","Demi","Elara","Faith"];
+const DISTS=["0.2 mi","0.5 mi","0.8 mi","1.2 mi","1.5 mi","2.0 mi","2.5 mi","3.1 mi","5.0 mi"];
+const TAGS=["HD","NEW","4K","VIP","HOT"];
+const CATS=["Jerkmate Free","Live Cams","Free Sex Cams","Adult Cams","Cam Girls","Teens","MILF","Asian","Latina","Ebony","Couples","BDSM","Fetish","Cosplay"];
+const SUBCATS=["All Models","Live Now","New","HD","Near You","Jerkmate Free","Trending"];
+const MSGS=["Someone just got Jerkmate free access","🔥 A viewer from your area joined Jerkmate","A nearby live room just went online","Another user got Jerkmate free access"];
+const FEED_MSGS=[" just got Jerkmate free from {city}"," is watching Jerkmate live cams"," just created a free Jerkmate account"," started browsing Jerkmate models"];
+const CITIES=["New York","Los Angeles","Chicago","Houston","Phoenix","Philadelphia","San Antonio","San Diego","Dallas","Austin","San Francisco","Seattle","Denver","Nashville","Portland","Miami","Atlanta","Boston","Detroit","Minneapolis"];
+const NAMES_FEED=["James","Michael","Robert","David","William","Richard","Joseph","Thomas","Chris","Daniel","Matt","Andrew","Ryan","Nick","Tyler","Brandon","Justin","Kevin","Brian","Jason","Steve","Eric","Adam","Patrick","John","Alex","Kyle","Cody","Jake","Dylan"];
+const TICKER_ITEMS=["🔥 New Jerkmate free access available","⭐ 18+ live cams starting now","💋 200+ models online near you","🎥 HD Jerkmate streams live now","🔞 Free adult cams for 18+ only","🔥 Join 18,742 on Jerkmate now","💕 Find your model with Jerky AI","⭐ Top 10 adult site worldwide"];
+let dc='',baseCount=18742;
+function id(s){return document.getElementById(s)}
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+function rn(m,n){return Math.floor(Math.random()*(n-m+1))+m}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function fm(n){return n>=1000?(n/1000).toFixed(1).replace('.0','')+'K':n.toString()}
+function openModal(e){if(e)e.preventDefault();id('modal').classList.add('active')}
+function closeModal(){id('modal').classList.remove('active')}
+function goSmartlink(e){if(e)e.preventDefault();id('modal').classList.remove('active');id('loader').classList.add('active');setTimeout(()=>window.location.href=AFF_URL,200)}
+function goPremium(e){if(e)e.preventDefault();id('loader').classList.add('active');setTimeout(()=>window.location.href=PREM_URL,200)}
+let exitShown=false;
+function closeExit(){id('exitPopup').classList.remove('active')}
+document.addEventListener('mouseleave',function(e){if(e.clientY<0&&!exitShown){exitShown=true;id('exitCity').textContent=dc||'your area';id('exitSeats').textContent=id('seatsLeft').textContent;id('exitPopup').classList.add('active')}});
+function renderCats(){const c=id('catTags');if(!c)return;c.innerHTML=shuffle([...CATS]).slice(0,7).map(t=>`<span class="cat-chip"><i class="fa-solid fa-fire" style="color:var(--pink);font-size:.45rem" aria-hidden="true"></i> ${t}</span>`).join('')}
+function renderSubCats(){const c=id('subCats');if(!c)return;c.innerHTML=SUBCATS.map((t,i)=>`<span class="cat-chip ${i===0?'active':''}">${t}</span>`).join('')}
+function renderTicker(){const t=id('tickerInner');if(!t)return;t.innerHTML=[...TICKER_ITEMS,...TICKER_ITEMS].map(i=>`<span class="ticker-item"><i class="fa-solid fa-circle" style="font-size:.3rem;color:var(--gold)" aria-hidden="true"></i> ${i}</span>`).join('')}
+function renderGallery(){const g=id('gallery');if(!g)return;const imgs=shuffle([...GIRLS]).slice(0,12);g.innerHTML=imgs.map((src,i)=>{const n=NAMES[i%NAMES.length]+rn(18,35),a=rn(18,30),d=pick(DISTS),v=rn(200,12000),t=pick(TAGS);return `<div onclick="openModal()" class="model-card"><img src="girls/${src}" alt="Jerkmate live cam model ${n}" loading="lazy" decoding="async" onerror="this.parentElement.style.display='none'"><div class="model-badge"><span class="dot"></span> Live</div><div class="model-views"><i class="fa-solid fa-eye" style="color:var(--pink)" aria-hidden="true"></i> ${fm(v)}</div><div class="model-info"><div class="name">${n}</div><div class="meta"><span><i class="fa-solid fa-location-dot" style="color:var(--pink)" aria-hidden="true"></i> ${d}</span><span style="margin-left:auto;background:rgba(255,255,255,.08);padding:1px 5px;border-radius:50px;font-weight:700">${a}</span><span style="background:rgba(255,26,107,.15);padding:1px 5px;border-radius:50px;color:var(--pink);font-weight:700;font-size:.45rem">${t}</span></div></div></div>`}).join('')}
+(function(){const c=id('particles');for(let i=0;i<20;i++){const p=document.createElement('div');const w=(Math.random()*2+1)+'px';p.style.cssText='position:absolute;left:'+(Math.random()*100)+'%;width:'+w+';height:'+w+';background:rgba(255,255,255,.3);border-radius:50%;animation:particleFloat '+(Math.random()*15+10)+'s linear infinite;animation-delay:'+(Math.random()*10)+'s;opacity:'+(Math.random()*.3+.1);c.appendChild(p)}})()
+function addItem(){const f=id('liveFeed');if(!f)return;const el=document.createElement('div');el.className='feed-item';el.innerHTML=`<i class="fa-solid fa-circle" aria-hidden="true"></i> ${pick(NAMES_FEED)}${pick(FEED_MSGS).replace('{city}',dc||pick(CITIES))}`;f.appendChild(el);requestAnimationFrame(()=>el.classList.add('show'));setTimeout(()=>{el.classList.remove('show');setTimeout(()=>el.remove(),400)},4500)}
+async function detectCity(){const apis=[{url:'https://ipapi.co/json/',fn:d=>d&&d.city?{city:d.city}:null},{url:'https://ipwho.is/',fn:d=>d&&d.success!==false&&d.city?{city:d.city}:null}];for(const api of apis){try{const r=await fetch(api.url,{cache:'no-store'});if(!r.ok)continue;const d=await r.json();const loc=api.fn(d);if(loc&&loc.city){dc=loc.city;updateCity();return}}catch(e){}}}
+function updateCity(){const c=dc||'your area';['heroCity','heroLocation','galleryCity','progressCity','finalCity','urgentCity'].forEach(i=>{const e=id(i);if(e)e.textContent=c})}
+document.addEventListener('DOMContentLoaded',function(){
+  const hi=id('heroImg');if(hi)hi.src='girls/'+pick(GIRLS);
+  renderCats();renderSubCats();renderTicker();renderGallery();detectCity();updateCity();
+  setTimeout(()=>id('stickyBar').classList.add('show'),2500);
+  setInterval(addItem,4000);for(let i=0;i<2;i++)setTimeout(addItem,i*2500);
+  setInterval(()=>{baseCount+=rn(-20,35);if(baseCount<16500)baseCount=16500;if(baseCount>21500)baseCount=21500;const f=fm(baseCount);['liveCount','heroBadge','heroViewers','heroViewers2','heroCount','progressCount','stickyCount','galleryLiveCount','finalCountDisplay','modalCount','urgentCount'].forEach(s=>{const e=id(s);if(e)e.textContent=s=='heroBadge'?baseCount.toLocaleString()+' Watching Jerkmate Free':f});id('progressPct').textContent=Math.floor((baseCount-16500)/5000*25+75)},4000);
+  setInterval(()=>{const s=rn(2,5);['seatsLeft','stickySeats','finalSeats','urgentSeats'].forEach(i=>{const e=id(i);if(e)e.textContent=s})},5000);
+  const cd=id('countdownDisplay');if(cd){let t=599;setInterval(()=>{if(t<=0)t=599;t--;const m=Math.floor(t/60),s=t%60;cd.textContent=(m<10?'0':'')+m+':'+(s<10?'0':'')+s},1000)}
+  function showToast(){const t=id('toast'),m=id('toastMsg');m.textContent=(dc&&Math.random()>.4?dc+': ':'')+pick(MSGS);t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500)}setTimeout(showToast,3000);setInterval(showToast,8000);
+});
+const ps=document.createElement('style');ps.textContent=`@keyframes particleFloat{0%{transform:translateY(100vh) scale(0);opacity:0}10%{opacity:1}90%{opacity:1}100%{transform:translateY(-10vh) scale(1);opacity:0}}`;document.head.appendChild(ps);
+</script>
 </body>
 </html>
