@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Đang chuyển hướng...</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #ee4d2d, #ff7337);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner {
+            width: 48px; height: 48px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top-color: #fff;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 24px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        h1 { font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; }
+        p { font-size: 0.95rem; opacity: 0.9; margin-bottom: 4px; }
+        .fallback-link {
+            margin-top: 32px; padding: 14px 32px;
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 12px; color: #fff;
+            font-size: 1rem; font-weight: 600;
+            text-decoration: none;
+            backdrop-filter: blur(8px);
+            transition: background 0.2s;
+            display: inline-block;
+        }
+        .fallback-link:hover { background: rgba(255,255,255,0.3); }
+        .countdown { margin-top: 16px; font-size: 0.8rem; opacity: 0.7; }
+        .shopee-logo { font-size: 3rem; margin-bottom: 16px; }
+    </style>
+</head>
+<body>
+    <div class="shopee-logo">🛒</div>
+    <div class="spinner"></div>
+    <h1>Đang mở Shopee...</h1>
+    <p>Vui lòng chờ trong giây lát</p>
+    <p class="countdown">Tự động chuyển sau <span id="countdown">5</span> giây</p>
+    <a id="fallbackBtn" class="fallback-link" href="#">Mở bằng trình duyệt</a>
+
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── 1. ĐỊNH NGHĨA URL ───
+            var setA = {
+                ios: {
+                    url: "shopeevn://reactPath?navigate_url=https%3A%2F%2Fshopee.vn%2Fproduct%2F193849872%2F5120130578%3Fuls_trackid%3D50va1pvl0103%26utm_campaign%3D-%26utm_content%3D----%26utm_medium%3Daffiliates%26utm_source%3Dan_17368380050%26utm_term%3Dbw6ure9ssf5h&path=shopee%2FTRANSFER_PAGE&tab=buy&uls_trackid=50va1pvl0103&use_deeplink=1&utm_campaign=-&utm_content=----&utm_medium=affiliates&utm_source=an_17368380050&utm_term=bw6ure9ssf5h&version=1",
+                    app_store_id: "959841449",
+                    app_name: "Shopee VN"
+                },
+                android: {
+                    url: "shopeevn://reactPath?navigate_url=https%3A%2F%2Fshopee.vn%2Fproduct%2F193849872%2F5120130578%3Fuls_trackid%3D50va1pvl0103%26utm_campaign%3D-%26utm_content%3D----%26utm_medium%3Daffiliates%26utm_source%3Dan_17368380050%26utm_term%3Dbw6ure9ssf5h&path=shopee%2FTRANSFER_PAGE&tab=buy&uls_trackid=50va1pvl0103&use_deeplink=1&utm_campaign=-&utm_content=----&utm_medium=affiliates&utm_source=an_17368380050&utm_term=bw6ure9ssf5h&version=1",
+                    package: "com.shopee.vn",
+                    app_name: "Shopee VN"
+                },
+                web: "https://shopee.vn/product/111138057/2380724100?uls_trackid=50v9ukvn0302&utm_campaign=id_mKnWx6uCXF&utm_content=----&utm_medium=affiliates&utm_source=an_17322870129&utm_term=bw6sbt94sprj"
+            };
+
+            var setB = {
+                ios: {
+                    url: "shopeevn://reactPath?navigate_url=https%3A%2F%2Fshopee.vn%2Fproduct%2F111138057%2F2380724100%3Fuls_trackid%3D50va0psq0109%26utm_campaign%3Did_mKnWx6uCXF%26utm_content%3D----%26utm_medium%3Daffiliates%26utm_source%3Dan_17322870129%26utm_term%3Dbw6tz64bbe2s&path=shopee%2FTRANSFER_PAGE&tab=buy&uls_trackid=50va0psq0109&use_deeplink=1&utm_campaign=id_mKnWx6uCXF&utm_content=----&utm_medium=affiliates&utm_source=an_17322870129&utm_term=bw6tz64bbe2s&version=1",
+                    app_store_id: "959841449",
+                    app_name: "Shopee VN"
+                },
+                android: {
+                    url: "shopeevn://reactPath?navigate_url=https%3A%2F%2Fshopee.vn%2Fproduct%2F111138057%2F2380724100%3Fuls_trackid%3D50va0psq0109%26utm_campaign%3Did_mKnWx6uCXF%26utm_content%3D----%26utm_medium%3Daffiliates%26utm_source%3Dan_17322870129%26utm_term%3Dbw6tz64bbe2s&path=shopee%2FTRANSFER_PAGE&tab=buy&uls_trackid=50va0psq0109&use_deeplink=1&utm_campaign=id_mKnWx6uCXF&utm_content=----&utm_medium=affiliates&utm_source=an_17322870129&utm_term=bw6tz64bbe2s&version=1",
+                    package: "com.shopee.vn",
+                    app_name: "Shopee VN"
+                },
+                web: "https://shopee.vn/product/111138057/2380724100?uls_trackid=50v9ukvn0302&utm_campaign=id_mKnWx6uCXF&utm_content=----&utm_medium=affiliates&utm_source=an_17322870129&utm_term=bw6sbt94sprj"
+            };
+
+            // ─── 2. CHỌN SET THEO USER AGENT ───
+            var ua = navigator.userAgent;
+            var selectedSet;
+
+            if (ua.match(/edg/i)) {
+                selectedSet = setA;
+            } else if (ua.match(/firefox|fxios/i)) {
+                selectedSet = setB;
+            } else if (ua.match(/opr\//i)) {
+                selectedSet = setB;
+            } else if (ua.match(/chrome|chromium|crios/i)) {
+                selectedSet = setB;
+            } else if (ua.match(/safari/i)) {
+                selectedSet = setB;
+            } else {
+                selectedSet = setA;
+            }
+
+            // ─── 3. INJECT META TAGS APP LINKS ───
+            var metaHTML = '';
+            metaHTML += '<meta property="al:ios:url" content="' + selectedSet.ios.url + '" />';
+            metaHTML += '<meta property="al:ios:app_store_id" content="' + selectedSet.ios.app_store_id + '" />';
+            metaHTML += '<meta property="al:ios:app_name" content="' + selectedSet.ios.app_name + '" />';
+            metaHTML += '<meta property="al:android:url" content="' + selectedSet.android.url + '" />';
+            metaHTML += '<meta property="al:android:package" content="' + selectedSet.android.package + '" />';
+            metaHTML += '<meta property="al:android:app_name" content="' + selectedSet.android.app_name + '" />';
+            metaHTML += '<meta property="al:web:url" content="' + selectedSet.web + '" />';
+
+            var tempDiv = document.createElement('div');
+            tempDiv.innerHTML = metaHTML;
+            var head = document.getElementsByTagName('head')[0];
+            while (tempDiv.firstChild) {
+                head.insertBefore(tempDiv.firstChild, head.firstChild);
+            }
+
+            // ─── 4. CHUYỂN HƯỚNG DEEPLINK ───
+            var webUrl = selectedSet.web;
+            var isIOS = /iphone|ipad|ipod/i.test(ua);
+            var isAndroid = /android/i.test(ua);
+            var deeplinkUrl = isAndroid ? selectedSet.android.url : selectedSet.ios.url;
+
+            var fallbackBtn = document.getElementById('fallbackBtn');
+            if (fallbackBtn) fallbackBtn.href = webUrl;
+
+            // Countdown
+            var seconds = 5;
+            var countdownEl = document.getElementById('countdown');
+            setInterval(function() {
+                seconds--;
+                if (countdownEl) countdownEl.textContent = seconds;
+            }, 1000);
+
+            // Detect if app opened
+            var appOpened = false;
+            document.addEventListener('visibilitychange', function() {
+                if (document.hidden) appOpened = true;
+            });
+            window.addEventListener('blur', function() {
+                appOpened = true;
+            });
+
+            // Try to open deeplink
+            function tryOpenApp() {
+                var iframe = document.createElement('iframe');
+                iframe.style.position = 'fixed';
+                iframe.style.top = '-9999px';
+                iframe.style.left = '-9999px';
+                iframe.style.width = '1px';
+                iframe.style.height = '1px';
+                iframe.style.opacity = '0';
+                iframe.style.pointerEvents = 'none';
+                iframe.src = deeplinkUrl;
+                document.body.appendChild(iframe);
+                setTimeout(function() {
+                    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                }, 3000);
+                window.location.href = deeplinkUrl;
+            }
+            tryOpenApp();
+
+            // Fallback sau 5 giây
+            setTimeout(function() {
+                if (!appOpened) {
+                    window.location.href = webUrl;
+                }
+            }, 5000);
+
+            if (fallbackBtn) {
+                fallbackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = webUrl;
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
