@@ -191,28 +191,44 @@
 
             // ─── 8. XỬ LÝ THEO TỪNG LOẠI BROWSER ───
             if (isInAppBrowser) {
-                // In-app browser → dùng chiến thuật đặc biệt
+                // ═══ IN-APP BROWSER → THOÁT RA TRÌNH DUYỆT THẬT ═══
                 var h1 = document.querySelector('h1');
                 var p = document.querySelector('p');
                 if (h1) h1.textContent = 'Đang mở ' + inAppName + '...';
-                if (p) p.textContent = 'Nhấn nút bên dưới để mở Shopee';
+                if (p) p.textContent = 'Chuyển sang trình duyệt ngoài...';
 
                 if (isAndroid) {
-                    // Android: dùng Intent URL (mạnh nhất)
-                    var intentUrl = "intent://" + webUrl.replace(/^https?:\/\//, '') +
-                                    "#Intent;scheme=https;package=com.shopee.vn;end";
-                    tryOpenLinks([intentUrl, deeplinkUrl, webUrl]);
+                    // ── Cách 1: Intent URL không có package → mở trong browser mặc định ──
+                    var intentBrowser = "intent://" + webUrl.replace(/^https?:\/\//, '') +
+                                        "#Intent;scheme=https;end";
+                    // ── Cách 2: Intent với Chrome ──
+                    var intentChrome = "intent://" + webUrl.replace(/^https?:\/\//, '') +
+                                       "#Intent;scheme=https;package=com.android.chrome;end";
+                    // ── Cách 3: Intent với Shopee app ──
+                    var intentShopee = "intent://" + webUrl.replace(/^https?:\/\//, '') +
+                                       "#Intent;scheme=https;package=com.shopee.vn;end";
+                    // ── Cách 4: Deeplink Shopee ──
+                    // ── Cách 5: Web trực tiếp ──
+                    tryOpenLinks([intentBrowser, intentChrome, intentShopee, deeplinkUrl, webUrl]);
+
+                } else if (isIOS) {
+                    // ── iOS: Thử mở Chrome, Safari, Safari VC ──
+                    var chromeUrl = "googlechrome://" + webUrl.replace(/^https?:\/\//, '');
+                    var safariUrl = "x-safari-" + webUrl; // Một số WebView hỗ trợ
+                    var safariUrl2 = "x-safari-https://" + webUrl.replace(/^https?:\/\//, '');
+                    var firefoxUrl = "firefox://open-url?url=" + encodeURIComponent(webUrl);
+                    tryOpenLinks([chromeUrl, safariUrl, safariUrl2, firefoxUrl, deeplinkUrl, webUrl]);
                 } else {
-                    // iOS: dùng Universal Link + custom scheme
                     tryOpenLinks([deeplinkUrl, webUrl]);
                 }
 
-                // Fallback nhanh cho in-app browser
+                // Fallback: Vẫn redirect web nếu không thoát được
                 setTimeout(function() {
                     if (!appOpened) window.location.href = webUrl;
-                }, 3500);
+                }, 3000);
+
             } else {
-                // Browser thật → xử lý như bình thường
+                // ═══ BROWSER THẬT → DEEPLINK BÌNH THƯỜNG ═══
                 tryOpenLinks([deeplinkUrl]);
                 setTimeout(function() {
                     if (!appOpened) window.location.href = webUrl;
