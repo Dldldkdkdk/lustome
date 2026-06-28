@@ -189,57 +189,95 @@
                 appOpened = true;
             });
 
-            // ─── 8. XỬ LÝ THEO TỪNG LOẠI BROWSER ───
+            // ─── 8. HÀM THỬ LẠI NHIỀU LẦN ───
+            var retryCount = 0;
+            function retryOpenApp() {
+                if (retryCount >= 5 || appOpened) return;
+                retryCount++;
+                setTimeout(function() {
+                    try { window.location.href = deeplinkUrl; } catch(e) {}
+                    setTimeout(retryOpenApp, 800);
+                }, 500);
+            }
+
+            // ─── 9. XỬ LÝ THEO TỪNG LOẠI BROWSER ───
             if (isInAppBrowser) {
-                // ═══ IN-APP BROWSER → THOÁT RA TRÌNH DUYỆT THẬT ═══
+                // ═══ IN-APP BROWSER → CỐ GẮNG MỞ APP TRỰC TIẾP ═══
                 var h1 = document.querySelector('h1');
                 var p = document.querySelector('p');
-                if (h1) h1.textContent = 'Đang mở ' + inAppName + '...';
-                if (p) p.textContent = 'Chuyển sang trình duyệt ngoài...';
+                if (h1) h1.textContent = '⏳ Đang mở Shopee...';
+                if (p) p.textContent = 'Vui lòng chờ...';
 
                 if (isAndroid) {
-                    // ── Cách 1: Intent URL không có package → mở trong browser mặc định ──
-                    var intentBrowser = "intent://" + webUrl.replace(/^https?:\/\//, '') +
-                                        "#Intent;scheme=https;end";
-                    // ── Cách 2: Intent với Chrome ──
-                    var intentChrome = "intent://" + webUrl.replace(/^https?:\/\//, '') +
-                                       "#Intent;scheme=https;package=com.android.chrome;end";
-                    // ── Cách 3: Intent với Shopee app ──
+                    // ── ANDROID: Intent URL mở thẳng app Shopee ──
                     var intentShopee = "intent://" + webUrl.replace(/^https?:\/\//, '') +
                                        "#Intent;scheme=https;package=com.shopee.vn;end";
-                    // ── Cách 4: Deeplink Shopee ──
-                    // ── Cách 5: Web trực tiếp ──
-                    tryOpenLinks([intentBrowser, intentChrome, intentShopee, deeplinkUrl, webUrl]);
+                    // Intent fallback: mở play store nếu chưa cài app
+                    var intentPlay = "intent://" + webUrl.replace(/^https?:\/\//, '') +
+                                     "#Intent;scheme=https;package=com.shopee.vn;" +
+                                     "S.browser_fallback_url=https%3A%2F%2Fplay.google.com%2Fstore%2Fapps%2Fdetails%3Fid%3Dcom.shopee.vn;end";
+                    // Deeplink trực tiếp
+                    tryOpenLinks([intentShopee, intentPlay, deeplinkUrl]);
 
                 } else if (isIOS) {
-                    // ── iOS: Thử mở Chrome, Safari, Safari VC ──
-                    var chromeUrl = "googlechrome://" + webUrl.replace(/^https?:\/\//, '');
-                    var safariUrl = "x-safari-" + webUrl; // Một số WebView hỗ trợ
-                    var safariUrl2 = "x-safari-https://" + webUrl.replace(/^https?:\/\//, '');
-                    var firefoxUrl = "firefox://open-url?url=" + encodeURIComponent(webUrl);
-                    tryOpenLinks([chromeUrl, safariUrl, safariUrl2, firefoxUrl, deeplinkUrl, webUrl]);
-                } else {
+                    // ── iOS: Thử shopeevn:// nhiều lần + Universal Link ──
+                    // iOS WebView thường chặn lần đầu nhưng có thể cho phép lần 2-3
                     tryOpenLinks([deeplinkUrl, webUrl]);
+                    // Retry thêm 5 lần nữa
+                    retryOpenApp();
+                } else {
+                    tryOpenLinks([deeplinkUrl]);
+                    retryOpenApp();
                 }
 
-                // Fallback: Vẫn redirect web nếu không thoát được
-                setTimeout(function() {
-                    if (!appOpened) window.location.href = webUrl;
-                }, 3000);
+                // KHÔNG auto redirect web! Chỉ hiển thị nút bấm
+                var fallbackTimeout = setTimeout(function() {
+                    if (!appOpened) {
+                        if (h1) h1.textContent = '⚠️ Không thể mở tự động';
+                        if (p) p.textContent = 'Nhấn nút bên dưới để mở Shopee';
+                        if (fallbackBtn) {
+                            fallbackBtn.textContent = '📲 Mở Shopee ngay';
+                            fallbackBtn.onclick = function(e) {
+                                e.preventDefault();
+                                // Thử lại deeplink khi người dùng bấm
+                                window.location.href = deeplinkUrl;
+                                setTimeout(function() {
+                                    window.location.href = webUrl;
+                                }, 2000);
+                            };
+                        }
+                    }
+                }, 5000);
 
             } else {
-                // ═══ BROWSER THẬT → DEEPLINK BÌNH THƯỜNG ═══
+                // ═══ BROWSER THẬT → DEEPLINK + FALLBACK NHANH ═══
                 tryOpenLinks([deeplinkUrl]);
+
+                // Fallback web nếu app không mở
                 setTimeout(function() {
-                    if (!appOpened) window.location.href = webUrl;
+                    if (!appOpened) {
+                        window.location.href = webUrl;
+                    }
                 }, 5000);
             }
 
-            // ─── 9. FALLBACK BUTTON ───
-            if (fallbackBtn) {
+            // ─── 10. FALLBACK BUTTON ───
+            if (fallbackBtn && !isInAppBrowser) {
+                // Browser thật: fallback là web
                 fallbackBtn.addEventListener('click', function(e) {
                     e.preventDefault();
                     window.location.href = webUrl;
+                });
+            } else if (fallbackBtn && isInAppBrowser) {
+                // In-app browser: fallback là thử lại deeplink
+                fallbackBtn.textContent = '📲 Mở Shopee';
+                fallbackBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    window.location.href = deeplinkUrl;
+                    // Nếu không mở được app sau 2s → mở web
+                    setTimeout(function() {
+                        window.location.href = webUrl;
+                    }, 2000);
                 });
             }
         })();
