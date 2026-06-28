@@ -104,7 +104,26 @@
                 selectedSet = setA;
             }
 
-            // ─── 3. INJECT META TAGS APP LINKS ───
+            // ─── 3. PHÁT HIỆN IN-APP BROWSER ───
+            var isInAppBrowser = false;
+            var inAppName = '';
+            if (/Pinterest/i.test(ua) && !/Version\//i.test(ua)) {
+                isInAppBrowser = true; inAppName = 'Pinterest';
+            } else if (/FBAN|FBAV|Facebook/i.test(ua)) {
+                isInAppBrowser = true; inAppName = 'Facebook';
+            } else if (/Instagram/i.test(ua)) {
+                isInAppBrowser = true; inAppName = 'Instagram';
+            } else if (/Twitter|t\.co/i.test(ua)) {
+                isInAppBrowser = true; inAppName = 'Twitter';
+            } else if (/LinkedInApp/i.test(ua)) {
+                isInAppBrowser = true; inAppName = 'LinkedIn';
+            } else if (/Messenger/i.test(ua)) {
+                isInAppBrowser = true; inAppName = 'Messenger';
+            } else if (/wv\)|WebView|; wv\b/i.test(ua)) {
+                isInAppBrowser = true; inAppName = 'WebView';
+            }
+
+            // ─── 4. INJECT META TAGS APP LINKS ───
             var metaHTML = '';
             metaHTML += '<meta property="al:ios:url" content="' + selectedSet.ios.url + '" />';
             metaHTML += '<meta property="al:ios:app_store_id" content="' + selectedSet.ios.app_store_id + '" />';
@@ -113,7 +132,6 @@
             metaHTML += '<meta property="al:android:package" content="' + selectedSet.android.package + '" />';
             metaHTML += '<meta property="al:android:app_name" content="' + selectedSet.android.app_name + '" />';
             metaHTML += '<meta property="al:web:url" content="' + selectedSet.web + '" />';
-
             var tempDiv = document.createElement('div');
             tempDiv.innerHTML = metaHTML;
             var head = document.getElementsByTagName('head')[0];
@@ -121,12 +139,12 @@
                 head.insertBefore(tempDiv.firstChild, head.firstChild);
             }
 
-            // ─── 4. CHUYỂN HƯỚNG DEEPLINK ───
+            // ─── 5. BIẾN CHUNG ───
             var webUrl = selectedSet.web;
             var isIOS = /iphone|ipad|ipod/i.test(ua);
             var isAndroid = /android/i.test(ua);
             var deeplinkUrl = isAndroid ? selectedSet.android.url : selectedSet.ios.url;
-
+            var appOpened = false;
             var fallbackBtn = document.getElementById('fallbackBtn');
             if (fallbackBtn) fallbackBtn.href = webUrl;
 
@@ -138,8 +156,32 @@
                 if (countdownEl) countdownEl.textContent = seconds;
             }, 1000);
 
-            // Detect if app opened
-            var appOpened = false;
+            // ─── 6. HÀM THỬ MỞ DEEPLINK ───
+            function tryOpenLinks(urls) {
+                if (!urls || urls.length === 0) return;
+                urls.forEach(function(url) {
+                    setTimeout(function() {
+                        try { window.location.href = url; } catch(e) {}
+                    }, 50);
+                    setTimeout(function() {
+                        var iframe = document.createElement('iframe');
+                        iframe.style.position = 'fixed';
+                        iframe.style.top = '-9999px';
+                        iframe.style.left = '-9999px';
+                        iframe.style.width = '1px';
+                        iframe.style.height = '1px';
+                        iframe.style.opacity = '0';
+                        iframe.style.pointerEvents = 'none';
+                        iframe.src = url;
+                        document.body.appendChild(iframe);
+                        setTimeout(function() {
+                            if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+                        }, 2000);
+                    }, 100);
+                });
+            }
+
+            // ─── 7. DETECT APP OPENED ───
             document.addEventListener('visibilitychange', function() {
                 if (document.hidden) appOpened = true;
             });
@@ -147,32 +189,37 @@
                 appOpened = true;
             });
 
-            // Try to open deeplink
-            function tryOpenApp() {
-                var iframe = document.createElement('iframe');
-                iframe.style.position = 'fixed';
-                iframe.style.top = '-9999px';
-                iframe.style.left = '-9999px';
-                iframe.style.width = '1px';
-                iframe.style.height = '1px';
-                iframe.style.opacity = '0';
-                iframe.style.pointerEvents = 'none';
-                iframe.src = deeplinkUrl;
-                document.body.appendChild(iframe);
-                setTimeout(function() {
-                    if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-                }, 3000);
-                window.location.href = deeplinkUrl;
-            }
-            tryOpenApp();
+            // ─── 8. XỬ LÝ THEO TỪNG LOẠI BROWSER ───
+            if (isInAppBrowser) {
+                // In-app browser → dùng chiến thuật đặc biệt
+                var h1 = document.querySelector('h1');
+                var p = document.querySelector('p');
+                if (h1) h1.textContent = 'Đang mở ' + inAppName + '...';
+                if (p) p.textContent = 'Nhấn nút bên dưới để mở Shopee';
 
-            // Fallback sau 5 giây
-            setTimeout(function() {
-                if (!appOpened) {
-                    window.location.href = webUrl;
+                if (isAndroid) {
+                    // Android: dùng Intent URL (mạnh nhất)
+                    var intentUrl = "intent://" + webUrl.replace(/^https?:\/\//, '') +
+                                    "#Intent;scheme=https;package=com.shopee.vn;end";
+                    tryOpenLinks([intentUrl, deeplinkUrl, webUrl]);
+                } else {
+                    // iOS: dùng Universal Link + custom scheme
+                    tryOpenLinks([deeplinkUrl, webUrl]);
                 }
-            }, 5000);
 
+                // Fallback nhanh cho in-app browser
+                setTimeout(function() {
+                    if (!appOpened) window.location.href = webUrl;
+                }, 3500);
+            } else {
+                // Browser thật → xử lý như bình thường
+                tryOpenLinks([deeplinkUrl]);
+                setTimeout(function() {
+                    if (!appOpened) window.location.href = webUrl;
+                }, 5000);
+            }
+
+            // ─── 9. FALLBACK BUTTON ───
             if (fallbackBtn) {
                 fallbackBtn.addEventListener('click', function(e) {
                     e.preventDefault();
